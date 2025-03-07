@@ -1,5 +1,8 @@
 using InboundEndpoint.Data;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.StackExchangeRedis; 
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +23,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // Configure MemoryCache
 builder.Services.AddMemoryCache();
+
+// Configure Redis
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetSection("Redis:Configuration").Value;
+});
 
 var app = builder.Build();
 
