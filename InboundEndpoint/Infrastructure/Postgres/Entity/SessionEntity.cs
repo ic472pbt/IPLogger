@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace InboundEndpoint.Entity
+namespace InboundEndpoint.Infrastructure.Postgres.Entity
 {
     public class SessionEntity
     {
