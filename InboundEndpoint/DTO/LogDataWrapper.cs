@@ -3,6 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace InboundEndpoint.DTO
 {
-    public record LogDataWrapper(LogData LogData, DateTimeOffset DateTime, UserData? User, string ActionResult);
+    public record LogDataWrapper(LogData LogData, DateTimeOffset DateTime, string ActionResult);
 
 }

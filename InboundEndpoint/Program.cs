@@ -1,7 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using InboundEndpoint.Context;
-using InboundEndpoint.Services;
 using InboundEndpoint.Repository;
+using Infrastructure.Kafka;
+using InboundEndpoint.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,8 +21,22 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
-builder.Services.AddScoped<UserEntity>();
+// Configure Kafka Connector
+builder.Services.AddSingleton(sp =>
+{
+    var logger = sp.GetRequiredService<ILogger<Connector>>();
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    var bootstrapServers = configuration.GetValue<string>("Kafka:BootstrapServers");
+    var topic = configuration.GetValue<string>("Kafka:Topic");
+    if(string.IsNullOrEmpty(bootstrapServers) || string.IsNullOrEmpty(topic))
+    {
+        throw new Exception("Kafka configuration is invalid");
+    }
+    return new Connector(logger, bootstrapServers, topic);
+});
+
 builder.Services.AddScoped<LogService>();
+builder.Services.AddScoped<UserEntity>();
 
 var app = builder.Build();
 
@@ -29,7 +44,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c => { c.SwaggerEndpoint("./v1/swagger.json", "LogController/v1"); });
+    app.UseSwaggerUI(c => { c.SwaggerEndpoint("./v1/swagger.json", "LogController"); });
 }
 
 app.UseAuthorization();

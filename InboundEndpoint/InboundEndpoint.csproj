@@ -17,6 +17,11 @@
 
   <ItemGroup>
     <Folder Include="Context\" />
+    <Folder Include="Infrastructure\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

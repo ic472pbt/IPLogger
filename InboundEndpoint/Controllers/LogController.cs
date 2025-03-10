@@ -1,19 +1,20 @@
-using InboundEndpoint.Context;
 using InboundEndpoint.DTO;
-using InboundEndpoint.Repository;
 using InboundEndpoint.Services;
+using Infrastructure.Kafka;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Newtonsoft.Json;
 using WinstonPuckett.PipeExtensions;
 
 namespace InboundEndpoint.Controllers
 {
     [ApiController]
-    [Route("[controller]/v1")]
+    [Route("[controller]")]
     public class LogController(
-        LogService logService) : ControllerBase
+        ILogger<LogController> logger,
+        LogService logService,
+        Connector kafkaConnector
+        ) : ControllerBase
     {
-        private readonly LogService _logService = logService;
 
         [HttpGet(Name = "CheckHealth")]
         public IActionResult CheckHealth()
@@ -26,11 +27,29 @@ namespace InboundEndpoint.Controllers
         {
             var result = await
                 logData.
-                    Pipe(_logService.ValidateLogMessage).
-                    PipeAsync(_logService.StoreLogRecord).
+                    Pipe(logService.ValidateLogMessage).
+                    PipeAsync(ProduceLogMessage).
                     ContinueWith(t => t.Result.ActionResult);
 
             return StringToActionResult(result);
+        }
+
+        private async Task<LogDataWrapper> ProduceLogMessage(LogDataWrapper logDataWrapper)
+        {
+            if(logDataWrapper.ActionResult != "")
+            {
+                return logDataWrapper;
+            }
+            try
+            {
+                await kafkaConnector.ProduceMessageAsync(logDataWrapper.LogData.UserId.ToString(), JsonConvert.SerializeObject(logDataWrapper.LogData));
+                return logDataWrapper;
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Error producing message");
+                return logDataWrapper with { ActionResult = "Error producing message" };
+            }
         }
 
         private IActionResult StringToActionResult(string actionResult)
