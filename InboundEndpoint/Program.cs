@@ -1,8 +1,7 @@
-using InboundEndpoint.Data;
 using Microsoft.EntityFrameworkCore;
-using StackExchange.Redis;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.StackExchangeRedis; 
+using InboundEndpoint.Context;
+using InboundEndpoint.Services;
+using InboundEndpoint.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,14 +20,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
-// Configure MemoryCache
-builder.Services.AddMemoryCache();
-
-// Configure Redis
-builder.Services.AddStackExchangeRedisCache(options =>
-{
-    options.Configuration = builder.Configuration.GetSection("Redis:Configuration").Value;
-});
+builder.Services.AddScoped<UserEntity>();
+builder.Services.AddScoped<LogService>();
 
 var app = builder.Build();
 
@@ -36,7 +29,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c => { c.SwaggerEndpoint("./v1/swagger.json", "LogController/v1"); });
 }
 
 app.UseAuthorization();

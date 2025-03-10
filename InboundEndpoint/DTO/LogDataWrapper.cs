@@ -1,12 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using InboundEndpoint.Model;
+using Microsoft.AspNetCore.Mvc;
 
 namespace InboundEndpoint.DTO
 {
-    public record LogDataWrapper(LogData LogData, DateTime DateTime, IActionResult ActionResult, int SessionId, int EventId)
-    {
-        public LogDataMessage ToLogDataMessage()
-        {
-            return new(LogData, DateTime, SessionId, EventId);
-        }
-    }
+    public record LogDataWrapper(LogData LogData, DateTimeOffset DateTime, UserData? User, string ActionResult);
+
 }
