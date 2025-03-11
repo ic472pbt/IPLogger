@@ -1,8 +1,5 @@
 ﻿using Confluent.Kafka;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Kafka
 {
@@ -24,7 +21,7 @@ namespace Infrastructure.Kafka
             logger.LogInformation("Message '{Message}' of '{TopicPartitionOffset}' delivered.", result.Value, result.TopicPartitionOffset);
         }
 
-        public IConsumer<Null, string> CreateConsumer(string groupId)
+        public IConsumer<string, string> CreateConsumer(string groupId)
         {
             var config = new ConsumerConfig
             {
@@ -32,7 +29,7 @@ namespace Infrastructure.Kafka
                 GroupId = groupId,
                 AutoOffsetReset = AutoOffsetReset.Earliest
             };
-            return new ConsumerBuilder<Null, string>(config).Build();
+            return new ConsumerBuilder<string, string>(config).Build();
         }
 
         public void ConsumeMessages(CancellationToken cancellationToken)
@@ -45,7 +42,7 @@ namespace Infrastructure.Kafka
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     var consumeResult = consumer.Consume(cancellationToken);
-                    Console.WriteLine($"Consumed message '{consumeResult.Message.Value}' at: '{consumeResult.TopicPartitionOffset}'.");
+                    logger.LogInformation("Consumed message '{Message}' at: '{TopicPartitionOffset}'.", consumeResult.Message.Value, consumeResult.TopicPartitionOffset);
                 }
             }
             catch (OperationCanceledException)
