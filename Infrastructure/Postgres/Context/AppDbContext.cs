@@ -1,15 +1,21 @@
-namespace InboundEndpoint.Context
+namespace Infrastructure.Postgres.Context
 {
-    using InboundEndpoint.Model;
+    using Infrastructure.Postgres.Model;
     using Microsoft.EntityFrameworkCore;
-    using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-    using System.Numerics;
 
     public class AppDbContext : DbContext
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+        private readonly string _connectionString;
+        public AppDbContext(string connectionString)
         {
-            Database.EnsureCreated();
+            _connectionString = connectionString;
+        }
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+                _ = optionsBuilder.UseNpgsql(_connectionString);
+            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

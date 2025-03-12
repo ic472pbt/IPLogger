@@ -6,22 +6,31 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Microservice\MicroserviceSetup.fs" />
     <Compile Include="Config.fs" />
+    <Compile Include="Kafka\FsKafka.fs" />
+    <Compile Include="Kafka\Initializer.fs" />
     <Content Include="config.yml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Confluent.Kafka" Version="2.8.0" />
     <PackageReference Include="FSharp.Configuration" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.2" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Contracts\Contracts.csproj" />
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="9.0.201" />
   </ItemGroup>
 
 </Project>

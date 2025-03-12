@@ -1,3 +1,5 @@
+using Contracts.Domain;
+using Contracts.DTO;
 using InboundEndpoint.DTO;
 using InboundEndpoint.Services;
 using Infrastructure.Kafka;
@@ -42,7 +44,10 @@ namespace InboundEndpoint.Controllers
             }
             try
             {
-                await kafkaConnector.ProduceMessageAsync(logDataWrapper.LogData.UserId.ToString(), JsonConvert.SerializeObject(logDataWrapper.LogData));
+                await kafkaConnector.ProduceMessageAsync(
+                    logDataWrapper.LogData.UserId.ToString(), 
+                    JsonConvert.SerializeObject(new LogDataMessage(logDataWrapper.LogData, logDataWrapper.DateTime))
+                );
                 return logDataWrapper;
             }
             catch (Exception e)

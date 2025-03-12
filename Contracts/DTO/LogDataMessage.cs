@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿
+using Contracts.Domain;
 
-namespace InboundEndpoint.DTO
+namespace Contracts.DTO
 {
-    public record class LogDataMessage(LogData LogData, DateTime DateTime);
+    public record class LogDataMessage(LogData LogData, DateTimeOffset DateTime);
 }

@@ -1,5 +1,4 @@
-﻿using InboundEndpoint.Model;
-using Microsoft.AspNetCore.Mvc;
+﻿using Contracts.Domain;
 
 namespace InboundEndpoint.DTO
 {

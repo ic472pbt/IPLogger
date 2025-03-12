@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace InboundEndpoint.Model
+namespace Infrastructure.Postgres.Model
 {
     public class UserData
     {

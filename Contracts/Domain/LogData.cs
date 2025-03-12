@@ -1,8 +1,7 @@
 using System.Text.RegularExpressions;
-using System.Numerics;
 using System.Globalization;
 
-namespace InboundEndpoint
+namespace Contracts.Domain
 {
     public class LogData
     {

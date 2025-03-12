@@ -1,6 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-using InboundEndpoint.Context;
-using InboundEndpoint.Repository;
 using Infrastructure.Kafka;
 using InboundEndpoint.Services;
 
@@ -16,10 +13,6 @@ builder.Services.AddSwaggerGen();
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// Configure DbContext
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
-);
 
 // Configure Kafka Connector
 builder.Services.AddSingleton(sp =>
@@ -36,7 +29,6 @@ builder.Services.AddSingleton(sp =>
 });
 
 builder.Services.AddScoped<LogService>();
-builder.Services.AddScoped<UserEntity>();
 
 var app = builder.Build();
 
