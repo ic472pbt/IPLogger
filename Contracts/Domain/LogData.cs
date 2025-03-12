@@ -27,7 +27,7 @@ namespace Contracts.Domain
         {
             return IPAddress.
                 Split('.').
-                Select((x, i) => uint.Parse(x) << (24 - 8 * i)).
+                Select((x, i) => uint.Parse(x) << (8 * i)).
                 Aggregate((x, y) => x | y);
         }
         public (long, long) IPAddressInt128()

@@ -1,0 +1,6 @@
+@QueryMe_HostAddress = http://localhost:5096
+
+GET {{QueryMe_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

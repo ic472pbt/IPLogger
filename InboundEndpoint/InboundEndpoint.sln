@@ -11,6 +11,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Outbound", "..\Outbound\Out
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contracts", "..\Contracts\Contracts.csproj", "{20BB72BD-20AD-4A3F-A605-360FB692CF50}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QueryMe", "..\QueryMe\QueryMe.csproj", "{6DC641D6-8EE1-4C34-AF10-34A4D2D38A48}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{20BB72BD-20AD-4A3F-A605-360FB692CF50}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{20BB72BD-20AD-4A3F-A605-360FB692CF50}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{20BB72BD-20AD-4A3F-A605-360FB692CF50}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DC641D6-8EE1-4C34-AF10-34A4D2D38A48}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DC641D6-8EE1-4C34-AF10-34A4D2D38A48}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DC641D6-8EE1-4C34-AF10-34A4D2D38A48}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DC641D6-8EE1-4C34-AF10-34A4D2D38A48}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
