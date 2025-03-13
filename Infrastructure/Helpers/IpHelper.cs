@@ -12,9 +12,9 @@ namespace Infrastructure.Helpers
     public static class IpHelper
     {
         // TODO: Move everything bellow to IP helper
-        public static bool IsIPV6(string IPAddress)
+        public static bool IsIPV6(string IpAddress)
         {
-            return Regex.IsMatch(IPAddress, @"^([0-9a-fA-F]{1,4}:){7}([0-9a-fA-F]{1,4}|:)$");
+            return IPAddress.TryParse(IpAddress, out IPAddress address) && address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6;
         }
         public static bool IsIPV4(string IPAddress)
         {
