@@ -1,6 +1,7 @@
 ﻿using InboundEndpoint.DTO;
 using InboundEndpoint.Controllers;
 using Contracts.Domain;
+using Infrastructure.Helpers;
 
 namespace InboundEndpoint.Services
 {
@@ -19,7 +20,7 @@ namespace InboundEndpoint.Services
                        ActionResult: $"{errorMessage} {logData.UserId}"
                    );
                }
-               if (string.IsNullOrEmpty(logData.IPAddress) || !logData.IsValidIP())
+               if (string.IsNullOrEmpty(logData.IPAddress) || !IpHelper.IsValidIP(logData.IPAddress))
                {
                    string errorMessage = "Valid IPAddress is required";
                    logger.LogError("{ErrorMessage} {IPAddress}", errorMessage, logData.IPAddress);

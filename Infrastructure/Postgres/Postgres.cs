@@ -7,13 +7,18 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net;
 using System.Numerics;
+using Infrastructure.Helpers;
 
 namespace Infrastructure.Postgres
 {
     public class Postgres(ILogger logger, string connectionString)
     {
         private readonly string _connectionString = connectionString;
-
+        /// <summary>
+        /// Get the latest connection info for the user. Cached version queried from the Users table.
+        /// </summary>
+        /// <param name="UserId">User id</param>
+        /// <returns></returns>
         public async Task<UserConnectionInfo?> GetUserConnectionInfo(long UserId)
         {
             using var connection = new NpgsqlConnection(_connectionString);
@@ -55,7 +60,7 @@ namespace Infrastructure.Postgres
                 }
                 else
                 {
-                    ipAddressBytes = ((BigInteger)reader.GetFieldValue<long>(3)).ToByteArray();
+                    ipAddressBytes = ((BigInteger)reader.GetFieldValue<long>(3)).ToByteArray(isBigEndian: true);
                 }
                 return new UserConnectionInfo
                 {
@@ -68,6 +73,54 @@ namespace Infrastructure.Postgres
             }
             return null;
         }
+
+        private static string BuildIpV4Condition(string prefix)
+        {
+            var octets = prefix.Split('.');
+            if (octets.Length == 4 && octets.Last().Length == 3)
+            {
+                return $"C4.\"IpAddress\" = {IpHelper.IPAddressInt32(octets)}";
+            }
+            else
+            {
+                return $"C4.\"IpAddress\"::text LIKE '{prefix}.%'";
+            }
+        }
+
+        public async Task<List<UserIpInfo>> FindUsersByIpPrefix(string prefix)
+        {
+            bool isIPv6 = prefix.Contains(':');
+            using var connection = new NpgsqlConnection(_connectionString);
+            await connection.OpenAsync();
+            string condition = isIPv6
+                ? $"C6.\"IpAddressLow\"::text LIKE '{prefix}%' OR C6.\"IpAddressHigh\"::text LIKE '{prefix}%'"
+                : BuildIpV4Condition(prefix);
+            string sql =
+                isIPv6
+                ? @$"SELECT 
+                        U.""UserId""
+                    FROM ""ConnectionsV6"" C6 
+                    LEFT JOIN ""Users"" U ON U.""UserId"" = C6.""UserId""
+                    WHERE {condition}"
+                : @$"SELECT 
+                        U.""UserId""
+                    FROM ""ConnectionsV4"" C4 
+                    LEFT JOIN ""Users"" U ON U.""UserId"" = C4.""UserId""
+                    WHERE {condition}";
+            using var cmd = new NpgsqlCommand(sql, connection);
+            using var reader = await cmd.ExecuteReaderAsync();
+            var users = new List<UserIpInfo>();
+            while (reader.Read())
+            {
+                users.Add(new UserIpInfo
+                {
+                    UserId = reader.GetInt64(0),
+                    IpAddress = new IPAddress(((BigInteger)reader.GetFieldValue<long>(1)).ToByteArray()).ToString()
+                });
+            }
+            return users;
+        }
+
         public async Task Connect()
         {
             using var connection = new NpgsqlConnection(_connectionString);

@@ -1,4 +1,5 @@
 ﻿using Contracts.DTO;
+using Infrastructure.Helpers;
 using Infrastructure.Postgres.Context;
 using Infrastructure.Postgres.Model;
 using Microsoft.EntityFrameworkCore;
@@ -47,11 +48,11 @@ namespace Infrastructure.Postgres.Repository
             {
                 var user = await GetOrCreateUserById(logDataMessage.LogData.UserId);
                 LastEventData lastEventData = new() { UserData = user};
-                if (logDataMessage.LogData.IsIPV4())
+                if (IpHelper.IsIPV4(logDataMessage.LogData.IPAddres))
                 {
                     var connection = new ConnectionDataV4()
                     {
-                        IpAddress = logDataMessage.LogData.IPAddressInt32(),
+                        IpAddress = IpHelper.IPAddressInt32(logDataMessage.LogData.IPAddress),
                         ConnectionTime = logDataMessage.DateTime.ToUniversalTime(),
                         User = user
                     };
@@ -61,7 +62,7 @@ namespace Infrastructure.Postgres.Repository
                 }
                 else
                 {
-                    var (high, low) = logDataMessage.LogData.IPAddressInt128();
+                    var (high, low) = IpHelper.IPAddressInt128(logDataMessage.LogData.IPAddress);
                     var connection = new ConnectionDataV6()
                     {
                         IpAddressHigh = high,

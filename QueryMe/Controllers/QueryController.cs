@@ -12,10 +12,25 @@ namespace QueryMe.Controllers
         private readonly ILogger<QueryController> _logger = logger;
 
         [HttpGet(Name = "LastUserConnectionInfo")]
-        public async Task<UserConnectionInfo> LastUserConnectionInfo(long UserId)
+        public async Task<IActionResult> LastUserConnectionInfo(long UserId)
         {
             var userConnectionInfo = await postgres.GetUserConnectionInfo(UserId);
-            return userConnectionInfo;
+            if (userConnectionInfo == null)
+            {
+                return NotFound();
+            }
+            return Ok(userConnectionInfo);
+        }
+
+        [HttpGet(Name = "UsersByIpPrefix")]
+        public async Task<IActionResult> UsersByIpPrefix(string IpPrefix)
+        {
+            var users = await postgres.FindUsersByIpPrefix(IpPrefix);
+            if (users == null)
+            {
+                return NotFound();
+            }
+            return Ok(users);
         }
     }
 }
