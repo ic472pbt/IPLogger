@@ -33,7 +33,7 @@ namespace Infrastructure.Postgres.Repository
                 user = new UserData() { UserId = userId };
                 AddUser(user);
 
-                logger.LogInformation("User {UserId} created", userId);
+                logger.LogDebug("User {UserId} created", userId);
             }
             return user;
         }

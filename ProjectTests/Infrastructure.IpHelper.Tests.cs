@@ -1,9 +1,9 @@
+using System;
+using System.Globalization;
+using NUnit.Framework;
+using Infrastructure.Helpers;
 namespace ProjectTests
 {
-    using System;
-    using System.Globalization;
-    using NUnit.Framework;
-    using Infrastructure.Helpers;
     [TestFixture]
     public class IpHelperTests
     {
