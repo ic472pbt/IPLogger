@@ -77,15 +77,50 @@ namespace Infrastructure.Postgres
         private static string BuildIpV4Condition(string prefix)
         {
             var octets = prefix.Split('.');
+            // point query if the prefix is a full IP address
             if (octets.Length == 4 && octets.Last().Length == 3)
             {
                 return $"C4.\"IpAddress\" = {IpHelper.IPAddressInt32(octets)}";
             }
             else
             {
-                return $"C4.\"IpAddress\"::text LIKE '{prefix}.%'";
+                switch (octets.Last().Length)
+                {
+                    case 1:
+                        int lastOctet1 = int.Parse(octets[^1]);
+                        uint ipFrom5 = IpHelper.IPAddressInt32(octets);
+                        octets[^1] = (lastOctet1 + 1).ToString();
+                        uint ipTo5 = IpHelper.IPAddressInt32(octets) - 1;
+
+                        octets[^1] = (lastOctet1 * 10).ToString();
+                        uint ipFrom4 = IpHelper.IPAddressInt32(octets);
+                        octets[^1] = ((lastOctet1 + 1) * 10).ToString();
+                        uint ipTo4 =  IpHelper.IPAddressInt32(octets) - 1;
+
+                        octets[^1] = (lastOctet1 * 100).ToString();
+                        uint ipFrom1 = IpHelper.IPAddressInt32(octets);
+                        octets[^1] = lastOctet1 == 2 ? "255" : ((lastOctet1 + 1) * 100).ToString();
+                        uint ipTo1 = lastOctet1 == 2 ? IpHelper.IPAddressInt32(octets)  : IpHelper.IPAddressInt32(octets) - 1;
+                        return $"C4.\"IpAddress\" BETWEEN {ipFrom1} AND {ipTo1} OR C4.\"IpAddress\" BETWEEN {ipFrom4} AND {ipTo4} OR C4.\"IpAddress\" BETWEEN {ipFrom5} AND {ipTo5}";
+                    case 2:
+                        int lastOctet2 = int.Parse(octets[^1]);
+                        uint ipFrom3 = IpHelper.IPAddressInt32(octets);
+                        octets[^1] = (lastOctet2 + 1).ToString();
+                        uint ipTo3 = IpHelper.IPAddressInt32(octets) - 1;
+
+                        octets[^1] = (lastOctet2 * 10).ToString();
+                        uint ipFrom2 = IpHelper.IPAddressInt32(octets);
+                        octets[^1] = lastOctet2 == 25 ? "255" : ((lastOctet2 + 1) * 10).ToString();
+                        uint ipTo2 = lastOctet2 == 25 ? IpHelper.IPAddressInt32(octets)  : IpHelper.IPAddressInt32(octets) - 1;
+                        return $"C4.\"IpAddress\" BETWEEN {ipFrom2} AND {ipTo2} OR C4.\"IpAddress\" BETWEEN {ipFrom3} AND {ipTo3}";
+                    default:
+                        uint ip = IpHelper.IPAddressInt32(octets);
+                        return $"C4.\"IpAddress\" >= {ip}";
+                }
             }
         }
+
+        private static string BuildIpV6Condition(string prefix) => throw new NotImplementedException("Same idea as for IPV4");
 
         public async Task<List<UserIpInfo>> FindUsersByIpPrefix(string prefix)
         {
@@ -93,17 +128,20 @@ namespace Infrastructure.Postgres
             using var connection = new NpgsqlConnection(_connectionString);
             await connection.OpenAsync();
             string condition = isIPv6
-                ? $"C6.\"IpAddressLow\"::text LIKE '{prefix}%' OR C6.\"IpAddressHigh\"::text LIKE '{prefix}%'"
+                ? BuildIpV6Condition(prefix)
                 : BuildIpV4Condition(prefix);
             string sql =
                 isIPv6
                 ? @$"SELECT 
-                        U.""UserId""
+                        U.""UserId"",
+                        C6.""IpAddressLow"",
+                        C6.""IpAddressHigh""
                     FROM ""ConnectionsV6"" C6 
                     LEFT JOIN ""Users"" U ON U.""UserId"" = C6.""UserId""
                     WHERE {condition}"
-                : @$"SELECT 
-                        U.""UserId""
+                : @$"SELECT DISTINCT
+                        U.""UserId"",
+                        C4.""IpAddress""
                     FROM ""ConnectionsV4"" C4 
                     LEFT JOIN ""Users"" U ON U.""UserId"" = C4.""UserId""
                     WHERE {condition}";
@@ -112,10 +150,11 @@ namespace Infrastructure.Postgres
             var users = new List<UserIpInfo>();
             while (reader.Read())
             {
+                // TODO: Implement IpV6 to string algorithm
                 users.Add(new UserIpInfo
                 {
                     UserId = reader.GetInt64(0),
-                    IpAddress = new IPAddress(((BigInteger)reader.GetFieldValue<long>(1)).ToByteArray()).ToString()
+                    IpAddress = new IPAddress(((BigInteger)reader.GetFieldValue<long>(1)).ToByteArray(isBigEndian:true)).ToString()
                 });
             }
             return users;

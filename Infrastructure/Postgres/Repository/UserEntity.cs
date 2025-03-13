@@ -48,7 +48,7 @@ namespace Infrastructure.Postgres.Repository
             {
                 var user = await GetOrCreateUserById(logDataMessage.LogData.UserId);
                 LastEventData lastEventData = new() { UserData = user};
-                if (IpHelper.IsIPV4(logDataMessage.LogData.IPAddres))
+                if (IpHelper.IsIPV4(logDataMessage.LogData.IPAddress))
                 {
                     var connection = new ConnectionDataV4()
                     {

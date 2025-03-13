@@ -10,7 +10,7 @@ using WinstonPuckett.PipeExtensions;
 namespace InboundEndpoint.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/v1/[controller]")]
     public class LogController(
         ILogger<LogController> logger,
         LogService logService,
@@ -18,13 +18,13 @@ namespace InboundEndpoint.Controllers
         ) : ControllerBase
     {
 
-        [HttpGet(Name = "CheckHealth")]
+        [HttpGet("CheckHealth")]
         public IActionResult CheckHealth()
         {
             return Ok();
         }
 
-        [HttpPost(Name = "Log")]
+        [HttpPost("Log")]
         public async Task<IActionResult> Log([FromBody] LogData logData)
         {
             var result = await
