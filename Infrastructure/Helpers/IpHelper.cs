@@ -35,11 +35,13 @@ namespace Infrastructure.Helpers
                 Aggregate((x, y) => x | y);
         }
 
-        public static (long, long) IPAddressInt128(string IPAddress)
+        public static (long, long) IPAddressInt128(string IpAddress)
         {
-            var parts = IPAddress.Split(':');
-            var high = parts.Take(4).Aggregate(0L, (acc, x) => (acc << 16) | ushort.Parse(x, NumberStyles.HexNumber));
-            var low = parts.Skip(4).Aggregate(0L, (acc, x) => (acc << 16) | ushort.Parse(x, NumberStyles.HexNumber));
+            IPAddress address = IPAddress.Parse(IpAddress);
+            // Reverse network byte order to host byte order
+            byte[] bytes = address.GetAddressBytes().Reverse().ToArray();
+            long low = BitConverter.ToInt64(bytes, 0);
+            long high = BitConverter.ToInt64(bytes, 8);
             return (high, low);
         }
 
