@@ -160,6 +160,51 @@ namespace Infrastructure.Postgres
             return users;
         }
 
+        public async Task<List<string>> GetAllV4IpsForUser(long userId)
+        {
+            using var connection = new NpgsqlConnection(_connectionString);
+            await connection.OpenAsync();
+            string sql =
+                @"SELECT DISTINCT
+                    C4.""IpAddress""
+                FROM ""ConnectionsV4"" C4 
+                WHERE C4.""UserId"" = @UserId";
+            using var cmd = new NpgsqlCommand(sql, connection);
+            cmd.Parameters.AddWithValue("@UserId", userId);
+            using var reader = await cmd.ExecuteReaderAsync();
+            var ips = new List<string>();
+            while (reader.Read())
+            {
+                ips.Add(new IPAddress(((BigInteger)reader.GetFieldValue<long>(0)).ToByteArray(isBigEndian: true)).ToString());
+            }
+            return ips;
+        }
+        public async Task<List<string>> GetAllV6IpsForUser(long userId)
+        {
+            using var connection = new NpgsqlConnection(_connectionString);
+            await connection.OpenAsync();
+            string sql =
+                @"SELECT DISTINCT
+                    C6.""IpAddressLow"",
+                    C6.""IpAddressHigh""
+                FROM ""ConnectionsV6"" C6 
+                WHERE C6.""UserId"" = @UserId";
+            using var cmd = new NpgsqlCommand(sql, connection);
+            cmd.Parameters.AddWithValue("@UserId", userId);
+            using var reader = await cmd.ExecuteReaderAsync();
+            var ips = new List<string>();
+            while (reader.Read())
+            {
+                var ipAddressLow = ((BigInteger)reader.GetFieldValue<long>(0)).ToByteArray(isBigEndian: true);
+                var ipAddressHigh = ((BigInteger)reader.GetFieldValue<long>(1)).ToByteArray(isBigEndian: true);
+                var ipAddressBytes = new byte[ipAddressLow.Length + ipAddressHigh.Length];
+                Buffer.BlockCopy(ipAddressHigh, 0, ipAddressBytes, 0, ipAddressHigh.Length);
+                Buffer.BlockCopy(ipAddressLow, 0, ipAddressBytes, ipAddressHigh.Length, ipAddressLow.Length);
+                ips.Add(new IPAddress(ipAddressBytes).ToString());
+            }
+            return ips;
+        }
+
         public async Task Connect()
         {
             using var connection = new NpgsqlConnection(_connectionString);

@@ -32,5 +32,18 @@ namespace QueryMe.Controllers
             }
             return Ok(users);
         }
+
+        [HttpGet("IpsByUserId")]
+        public async Task<IActionResult> IpsByUserId(long UserId)
+        {
+            var ips = (await Task.WhenAll(postgres.GetAllV4IpsForUser(UserId), postgres.GetAllV6IpsForUser(UserId)))
+                .SelectMany(ipList => ipList)
+                .ToList();
+            if (ips.Count == 0)
+            {
+                return NotFound();
+            }
+            return Ok(ips);
+        }
     }
 }
